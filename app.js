@@ -25,6 +25,7 @@ app.use(
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
+//Get All Products
 const getProducts = async () => {
   try {
     const products = await stripe.products.list();
