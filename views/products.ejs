@@ -1,0 +1,50 @@
+<h3>Select a Product</h3>
+<ul>
+    <% products.forEach(function(product) { %>
+        <li>
+            <%= product.name %> - <%= (productPriceMap[product.id] / 100).toFixed(2) %> EUR
+                    <form class="product-form">
+                        <input type="hidden" name="product_id" value="<%= product.id %>">
+                        <input type="hidden" name="currency" value="EUR">
+                        <input type="submit" value="Select">
+                    </form>
+        </li>
+        <% }); %>
+</ul>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    var stripe = Stripe('pk_test_14vHarh9UwmiM7SbzltR6Uso00wqG1UNvu');
+    var productForms = document.querySelectorAll('.product-form');
+
+    productForms.forEach(function (form) {
+        form.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            console.log("Form submitted");
+
+            var productId = form.querySelector('input[name="product_id"]').value;
+            console.log("Product ID:", productId);
+
+            try {
+                var response = await fetch('/create-checkout-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        product_id: productId,
+                        currency: 'EUR' // Add the currency parameter
+                    })
+                });
+
+                var session = await response.json();
+                console.log("Checkout session:", session);
+                stripe.redirectToCheckout({
+                    sessionId: session.sessionId // Use session.sessionId instead of session.id
+                });
+            } catch (error) {
+                console.error(error);
+            }
+        });
+    });
+</script>
